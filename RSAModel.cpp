@@ -1,6 +1,6 @@
-//作者：刘津榤
-//时间：2021/3/22
-//文件内容：RSA密码系统的简单实现
+/*作者：刘津榤
+时间：2021/3/22
+文件内容：RSA密码系统的简单实现*/
 #include <iostream>
 #include <cmath>
 #include <ctime>
@@ -58,7 +58,7 @@ RandomNumberProducer::RandomNumberProducer()
     srand(time(NULL));
 }
 
-//用厄氏筛法判断是否是质数
+//用厄氏筛法判断x是否是质数
 bool RandomNumberProducer::isPrime(long long int x)
 {
     if (x <= 1)
@@ -83,7 +83,7 @@ bool RandomNumberProducer::isPrime(long long int x)
     }
 }
 
-//用辗转相除法判断两数是否互质
+//用辗转相除法判断两数x，y是否互质
 bool RandomNumberProducer::areComprime(long long int x, long long int y)
 {
     if (x < y)
@@ -111,7 +111,7 @@ int RandomNumberProducer::produceRandomNumber(long long int min, long long int m
     return randomNumber;
 }
 
-//产生定长的比特串
+//产生定长为k的比特串，producePrimeNumber决定是否返回数必须为质数
 int RandomNumberProducer::produceRandomBits(long long int k, bool producePrimeNumber = false)
 {
     return produceRandomNumber(1 << k - 1, 1 << k, producePrimeNumber);
@@ -144,7 +144,7 @@ RSAModel::RSAModel()
         d = producer.produceRandomNumber(1, eulerN);
     } while (!producer.areComprime(d, eulerN));//生成的d必须在1与eulerN之间且两者互质
     for (e = 1; (d * e - 1) % eulerN != 0; ++e)
-        ;//遍历生辰合适的e
+        ;//遍历生成合适的e
 }
 
 //返回私钥
