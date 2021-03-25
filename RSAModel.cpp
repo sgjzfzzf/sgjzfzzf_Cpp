@@ -20,7 +20,6 @@ public:
     int produceRandomBits(long long int, bool);
 };
 
-
 //RSA加密解密模型
 class RSAModel
 {
@@ -33,15 +32,15 @@ private:
     long long int e;
     RandomNumberProducer producer;
     long long int pow_mod(long long int, long long int, long long int);
+    long long int calcE();
 
 public:
     RSAModel();
-    long long int privateKey();
     long long int publishedKey();
     long long int encode(long long int, long long int);
     vector<long long int> encode(string, long long int);
-    long long int decode(long long int, long long int);
-    string decode(vector<long long int>, long long int);
+    long long int decode(long long int);
+    string decode(vector<long long int>);
 };
 
 //交换函数
@@ -132,6 +131,26 @@ long long int RSAModel::pow_mod(long long int x, long long int i, long long int 
     return ans;
 }
 
+//扩展欧几里得除法计算私钥
+long long int RSAModel::calcE()
+{
+    int q1 = eulerN, q2 = d, s1 = 1, t1 = 0, s2 = 0, t2 = 1, r;
+    while (q2 != 0)
+    {
+        r = q1 / q2;
+        int tmps2 = s2, tmpt2 = t2, tmpq2 = q2;
+        s2 = s1 - r * s2;
+        t2 = t1 - r * t2;
+        q2 = q1 % q2;
+        s1 = tmps2;
+        t1 = tmpt2;
+        q1 = tmpq2;
+    }
+    for (; t1 <= 0; t1 += eulerN)
+        ;
+    return t1;
+}
+
 //定义RSA模型中的各种参数
 RSAModel::RSAModel()
 {
@@ -142,15 +161,8 @@ RSAModel::RSAModel()
     do
     {
         d = producer.produceRandomNumber(1, eulerN);
-    } while (!producer.areComprime(d, eulerN));//生成的d必须在1与eulerN之间且两者互质
-    for (e = 1; (d * e - 1) % eulerN != 0; ++e)
-        ;//遍历生成合适的e
-}
-
-//返回私钥
-long long int RSAModel::privateKey()
-{
-    return d;
+    } while (!producer.areComprime(d, eulerN)); //生成的d必须在1与eulerN之间且两者互质
+    e = calcE();
 }
 
 //返回公钥
@@ -177,29 +189,29 @@ vector<long long int> RSAModel::encode(string doc, long long int pubKey)
 }
 
 //对单个数字密文的解密函数，第一个参数sec为密文，第二个参数priKey为私钥
-long long int RSAModel::decode(long long int sec, long long int priKey)
+long long int RSAModel::decode(long long int sec)
 {
-    return pow_mod(sec, priKey, n);
+    return pow_mod(sec, d, n);
 }
 
 //对数字数组密文的解密函数，第一个参数sec为密文，第二个参数priKey为私钥
-string RSAModel::decode(vector<long long int> sec, long long int priKey)
+string RSAModel::decode(vector<long long int> sec)
 {
     string doc;
     for (int n : sec)
     {
-        doc += static_cast<char>(decode(n, priKey));
+        doc += static_cast<char>(decode(n));
     }
     return doc;
 }
 
 int main()
 {
-    RSAModel model;//RSA模型定义
+    RSAModel model; //RSA模型定义
     vector<long long int> sec;
-    string doc = "\"Mathematical Fundation of Information Security + 201202001 + 学号\"", sec_d;//欲加密的字符串
-    sec = model.encode(doc, model.publishedKey());//加密后的数字数组
-    sec_d = model.decode(sec, model.privateKey());//解密后的字符串
+    string doc = "\"Mathematical Fundation of Information Security + 201202001 + 学号\"", sec_d; //欲加密的字符串
+    sec = model.encode(doc, model.publishedKey());                                               //加密后的数字数组
+    sec_d = model.decode(sec);                                                                   //解密后的字符串
     cout << "original information is " << doc << endl;
     cout << "encoded information is ";
     for (int n : sec)
